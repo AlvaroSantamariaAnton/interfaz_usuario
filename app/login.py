@@ -56,13 +56,18 @@ class Login:
 
         datos = database.verificar_usuario(user, pw)
         if datos:
-            nombre, edad, bloqueado = datos
+            username_bd, edad, bloqueado = datos
             try:
+                if username_bd == "admin":
+                    self.window.destroy()
+                    self.abrir_panel_admin()
+                    return  # MUY IMPORTANTE: evitar que se siga al panel normal
+
                 if edad < 18:
                     raise excep.MenorEdadError("Acceso denegado: el usuario es menor de edad.")
                 if bloqueado:
                     raise excep.UsuarioBloqueadoError("Acceso denegado: el usuario está bloqueado.")
-                messagebox.showinfo("BIENVENIDO", f"Bienvenido {nombre}")
+                
                 self.usuario_logado = user
                 self.abrir_programa()
             except (excep.MenorEdadError, excep.UsuarioBloqueadoError) as e:
@@ -87,10 +92,65 @@ class Login:
 
         self.panel_window.mainloop()
 
+    def abrir_panel_admin(self):
+            self.admin_window = Tk()
+            self.admin_window.title("Panel Administrador")
+            self.admin_window.geometry("400x250")
+
+            Label(self.admin_window, text="Panel de Administración", font=("Arial", 16)).pack(pady=20)
+
+            Button(self.admin_window, text="Gestionar Usuarios", font=("Arial", 12), width=25, command=self.gestionar_usuarios).pack(pady=10)
+            Button(self.admin_window, text="Añadir Usuario", font=("Arial", 12), width=25, command=self.abrir_registro_admin).pack(pady=10)
+            Button(self.admin_window, text="Cerrar sesión", font=("Arial", 12), width=25, fg="red", command=self.admin_window.destroy).pack(pady=20)
+
+            self.admin_window.mainloop()
+
     def abrir_registro(self):
         reg_window = Toplevel(self.window)
         Registro(reg_window, self.loginuser)
 
+    def abrir_registro_admin(self):
+            reg_window = Toplevel(self.admin_window)
+            Registro(reg_window, login_callback=None, modo_admin=True)
+
+    def gestionar_usuarios(self):
+            usuarios = database.obtener_todos_los_usuarios()
+
+            gestion_win = Toplevel(self.admin_window)
+            gestion_win.title("Gestionar Usuarios")
+            gestion_win.geometry("400x400")
+
+            Label(gestion_win, text="Usuarios Registrados", font=("Arial", 14)).pack(pady=10)
+
+            frame = Frame(gestion_win)
+            frame.pack(pady=10)
+
+            for i, (username, bloqueado) in enumerate(usuarios):
+                Label(frame, text=username, font=("Arial", 11), width=15, anchor="w").grid(row=i, column=0, padx=5, pady=5)
+
+                estado = StringVar(value="Bloqueado" if bloqueado else "Activo")
+                estado_label = Label(frame, textvariable=estado, width=10)
+                estado_label.grid(row=i, column=1)
+
+                def make_toggle(u=username, e=estado):
+                    def toggle():
+                        nuevo_estado = 0 if e.get() == "Bloqueado" else 1
+                        database.actualizar_estado_bloqueo(u, nuevo_estado)
+                        e.set("Bloqueado" if nuevo_estado else "Activo")
+                    return toggle
+
+                Button(frame, text="Bloquear/Desbloquear", command=make_toggle()).grid(row=i, column=2)
+
+                def make_eliminar(u=username):
+                    def eliminar():
+                        if messagebox.askyesno("Eliminar", f"¿Eliminar usuario '{u}'?"):
+                            database.eliminar_usuario(u)
+                            gestion_win.destroy()
+                            self.gestionar_usuarios()
+                    return eliminar
+
+                Button(frame, text="Eliminar", fg="red", command=make_eliminar()).grid(row=i, column=3, padx=5)
+                
     def ver_perfil(self):
         datos = database.obtener_datos_usuario(self.usuario_logado)
         if not datos:

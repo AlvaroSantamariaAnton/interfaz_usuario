@@ -11,17 +11,24 @@ def crear_tabla():
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    edad INTEGER NOT NULL,
-    bloqueado INTEGER DEFAULT 0,
-    nombre TEXT,
-    apellidos TEXT,
-    sexo TEXT
-    )
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            edad INTEGER NOT NULL,
+            bloqueado INTEGER DEFAULT 0,
+            nombre TEXT,
+            apellidos TEXT,
+            sexo TEXT
+        )
     """)
+    # Crear usuario admin si no existe
+    cursor.execute("SELECT * FROM usuarios WHERE username = 'admin'")
+    if not cursor.fetchone():
+        cursor.execute("""
+            INSERT INTO usuarios (username, password, edad, bloqueado, nombre)
+            VALUES (?, ?, ?, ?, ?)
+        """, ("admin", hash_password("admin2025"), 99, 0, "Administrador"))
     conn.commit()
     conn.close()
 
@@ -84,4 +91,28 @@ def actualizar_datos_usuario(username, nombre, apellidos, sexo, nueva_contra=Non
         """, (nombre, apellidos, sexo, username))
     conn.commit()
     conn.close()
-    
+
+def obtener_todos_los_usuarios():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT username, bloqueado FROM usuarios
+        WHERE username != 'admin'
+    """)
+    usuarios = cursor.fetchall()
+    conn.close()
+    return usuarios
+
+def actualizar_estado_bloqueo(username, estado):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE usuarios SET bloqueado = ? WHERE username = ?", (estado, username))
+    conn.commit()
+    conn.close()
+
+def eliminar_usuario(username):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()

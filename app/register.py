@@ -4,11 +4,12 @@ from app import database
 from datetime import datetime
 
 class Registro:
-    def __init__(self, root, login_callback):
+    def __init__(self, root, login_callback, modo_admin=False):
         self.root = root
         self.root.title("Registro de usuario")
         self.root.geometry("400x350")
         self.login_callback = login_callback
+        self.modo_admin = modo_admin
 
         frame = Frame(root)
         frame.pack(pady=20)
@@ -57,8 +58,9 @@ class Registro:
 
         creado = database.registrar_usuario(username, password, edad)
         if creado:
-            messagebox.showinfo("Registro exitoso", "Usuario registrado correctamente. Iniciando sesión...")
+            messagebox.showinfo("Registro exitoso", "Usuario registrado correctamente.")
             self.root.destroy()
-            self.login_callback(username, password)
+            if not self.modo_admin:
+                self.login_callback(username, password)
         else:
             messagebox.showerror("Error", "El usuario ya existe.")
