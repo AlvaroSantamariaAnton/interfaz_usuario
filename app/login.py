@@ -23,17 +23,17 @@ class Login:
         label_img.image = img_render
         label_img.grid(row=0, column=0, sticky='s', padx=10, pady=30)
 
-        Label(frame_enc, text="INICIAR SESIÓN", fg="black", font=("Comic Sans", 15), pady=10).grid(row=0, column=1)
+        Label(frame_enc, text="INICIAR SESIÓN", fg="black", font=("Arial", 15), pady=10).grid(row=0, column=1)
 
-        frame_form = LabelFrame(window_login, text="Datos", font=("Comic Sans", 11))
+        frame_form = LabelFrame(window_login, text="Datos", font=("Arial", 11))
         frame_form.pack()
 
-        Label(frame_form, text="Usuario: ", font=("Comic Sans", 13)).grid(row=0, column=0, padx=10, pady=(30, 15))
-        self.user = Entry(frame_form, width=25, font=("Comic Sans", 13))
+        Label(frame_form, text="Usuario: ", font=("Arial", 13)).grid(row=0, column=0, padx=10, pady=(30, 15))
+        self.user = Entry(frame_form, width=25, font=("Arial", 13))
         self.user.grid(row=0, column=1, padx=10, pady=(30, 15))
 
-        Label(frame_form, text="Contraseña: ", font=("Comic Sans", 13)).grid(row=1, column=0, padx=10, pady=(15, 30))
-        self.passw = Entry(frame_form, width=25, font=("Comic Sans", 13), show="*")
+        Label(frame_form, text="Contraseña: ", font=("Arial", 13)).grid(row=1, column=0, padx=10, pady=(15, 30))
+        self.passw = Entry(frame_form, width=25, font=("Arial", 13), show="*")
         self.passw.grid(row=1, column=1, padx=10, pady=(15, 30))
 
         self.show_password = False
@@ -43,8 +43,8 @@ class Login:
         frame_btn = Frame(window_login)
         frame_btn.pack()
 
-        Button(frame_btn, text="Acceder", command=self.loginuser, height=2, width=12, bg="black", fg="#ffffff", font=("Comic Sans", 13)).grid(row=0, column=0, padx=10, pady=10)
-        Button(frame_btn, text="Registrarse", command=self.abrir_registro, height=2, width=12, bg="gray", fg="#ffffff", font=("Comic Sans", 13)).grid(row=0, column=1, padx=10, pady=10)
+        Button(frame_btn, text="Acceder", command=self.loginuser, height=2, width=12, bg="black", fg="#ffffff", font=("Arial", 13)).grid(row=0, column=0, padx=10, pady=10)
+        Button(frame_btn, text="Registrarse", command=self.abrir_registro, height=2, width=12, bg="gray", fg="#ffffff", font=("Arial", 13)).grid(row=0, column=1, padx=10, pady=10)
 
     def toggle_password(self):
         self.show_password = not self.show_password
@@ -61,7 +61,7 @@ class Login:
                 if username_bd == "admin":
                     self.window.destroy()
                     self.abrir_panel_admin()
-                    return  # MUY IMPORTANTE: evitar que se siga al panel normal
+                    return
 
                 if edad < 18:
                     raise excep.MenorEdadError("Acceso denegado: el usuario es menor de edad.")
