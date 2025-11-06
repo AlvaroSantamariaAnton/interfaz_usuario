@@ -87,6 +87,7 @@ class Login:
         Label(frame, text="Bienvenido a tu panel privado", font=("Arial", 18)).pack(pady=10)
 
         Button(frame, text="Mi perfil", font=("Arial", 12), width=20, command=self.ver_perfil).pack(pady=5)
+        Button(frame, text="Mensajes", font=("Arial", 12), width=20, command=lambda: messagebox.showinfo("Mensajes", "No tienes mensajes nuevos.")).pack(pady=5)
         Button(frame, text="Ajustes", font=("Arial", 12), width=20, command=self.abrir_ajustes).pack(pady=5)
         Button(frame, text="Cerrar sesión", font=("Arial", 12), width=20, fg="red", command=self.panel_window.destroy).pack(pady=20)
 
