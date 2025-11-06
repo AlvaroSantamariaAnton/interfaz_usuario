@@ -2,7 +2,7 @@ import sqlite3
 import hashlib
 import os
 
-DB_NAME = os.path.join("data", "usuarios.db")
+DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "usuarios.db")
 
 def conectar():
     return sqlite3.connect(DB_NAME)

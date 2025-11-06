@@ -1,3 +1,4 @@
+import re
 from tkinter import *
 from tkinter import messagebox
 from app import database
@@ -45,22 +46,35 @@ class Registro:
             messagebox.showwarning("Campos vacíos", "Por favor, completa todos los campos obligatorios.")
             return
 
+        if not validar_usuario(username):
+            messagebox.showerror("Usuario inválido", "El nombre de usuario solo puede contener letras, números y guiones bajos.")
+            return
+
         try:
             fecha_nacimiento = datetime.strptime(fecha_str, "%d-%m-%Y")
-            edad = int((datetime.today() - fecha_nacimiento).days / 365.25)
+            edad = calcular_edad(fecha_nacimiento)
+
+            if edad < 0:
+                messagebox.showerror("Fecha inválida", "La fecha de nacimiento no puede estar en el futuro.")
+                return
+
         except ValueError:
-            messagebox.showerror("Formato incorrecto", "La fecha debe tener el formato DD-MM-YYYY.")
+            messagebox.showerror("Formato inválido", "Usa el formato DD-MM-YYYY para la fecha.")
             return
 
-        if edad < 0:
-            messagebox.showerror("Edad inválida", "La fecha introducida no es válida.")
-            return
-
-        creado = database.registrar_usuario(username, password, edad)
-        if creado:
+        if database.registrar_usuario(username, password, edad):
             messagebox.showinfo("Registro exitoso", "Usuario registrado correctamente.")
             self.root.destroy()
-            if not self.modo_admin:
-                self.login_callback(username, password)
+            self.login_callback()
         else:
             messagebox.showerror("Error", "El usuario ya existe.")
+
+# Función para calcular edad exacta
+def calcular_edad(fecha_nac):
+    hoy = datetime.today()
+    edad = hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
+    return edad
+
+# Función para validar nombre de usuario
+def validar_usuario(username):
+    return bool(re.match(r'^[a-zA-Z0-9_]+$', username))
