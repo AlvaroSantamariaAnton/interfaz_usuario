@@ -4,12 +4,13 @@ from PIL import ImageTk, Image
 from app import database
 from app.register import Registro
 from app import excep
+from app.utils import centrar_ventana
 
 class Login:
     def __init__(self, window_login):
         self.window = window_login
         self.window.title("Ventana de acceso")
-        self.window.geometry("420x400")
+        centrar_ventana(self.window, 420, 400)
         self.window.resizable(0, 0)
 
         database.crear_tabla()
@@ -80,7 +81,7 @@ class Login:
         self.window.destroy()
         self.panel_window = Tk()
         self.panel_window.title("Panel de Usuario")
-        self.panel_window.geometry("400x350")
+        centrar_ventana(self.panel_window, 400, 350)
 
         frame = Frame(self.panel_window)
         frame.pack(pady=40)
@@ -97,7 +98,7 @@ class Login:
     def abrir_panel_admin(self):
             self.admin_window = Tk()
             self.admin_window.title("Panel Administrador")
-            self.admin_window.geometry("400x300")
+            centrar_ventana(self.admin_window, 400, 300)
 
             Label(self.admin_window, text="Panel de Administración", font=("Arial", 16)).pack(pady=20)
 
@@ -120,7 +121,7 @@ class Login:
 
             gestion_win = Toplevel(self.admin_window)
             gestion_win.title("Gestionar Usuarios")
-            gestion_win.geometry("600x600")
+            centrar_ventana(gestion_win, 600, 600)
 
             Label(gestion_win, text="Usuarios Registrados", font=("Arial", 14)).pack(pady=10)
 
@@ -163,7 +164,7 @@ class Login:
 
         perfil_window = Toplevel(self.panel_window)
         perfil_window.title("Mi perfil")
-        perfil_window.geometry("350x300")
+        centrar_ventana(perfil_window, 350, 300)
 
         frame = Frame(perfil_window)
         frame.pack(pady=20)
@@ -197,7 +198,7 @@ class Login:
 
         ajustes_window = Toplevel(self.panel_window)
         ajustes_window.title("Ajustes del perfil")
-        ajustes_window.geometry("400x350")
+        centrar_ventana(ajustes_window, 400, 350)
 
         frame = Frame(ajustes_window)
         frame.pack(pady=20)
@@ -248,7 +249,7 @@ class Login:
     def abrir_mensajes(self):
         mensajes_win = Toplevel(self.panel_window)
         mensajes_win.title("Mis mensajes")
-        mensajes_win.geometry("550x400")
+        centrar_ventana(mensajes_win, 550, 400)
 
         mensajes = database.obtener_mensajes_receptor(self.usuario_logado)
 
@@ -289,7 +290,7 @@ class Login:
     def enviar_mensaje_popup(self):
         popup = Toplevel(self.panel_window)
         popup.title("Enviar mensaje")
-        popup.geometry("400x300")
+        centrar_ventana(popup, 400, 300)
 
         Label(popup, text="Enviar mensaje", font=("Arial", 14)).pack(pady=10)
 
@@ -305,7 +306,7 @@ class Login:
             return
 
         destinatario_var = StringVar()
-        destinatario_var.set(usuarios[0])  # por defecto
+        destinatario_var.set(usuarios[0])
 
         dropdown = OptionMenu(frame, destinatario_var, *usuarios)
         dropdown.config(font=("Arial", 12))
@@ -335,7 +336,7 @@ class Login:
 
         detalle = Toplevel(self.panel_window)
         detalle.title("Detalle del mensaje")
-        detalle.geometry("400x300")
+        centrar_ventana(detalle, 400, 300)
 
         Label(detalle, text=f"De: {emisor}", font=("Arial", 12)).pack(pady=5)
         Label(detalle, text=f"Fecha: {fecha}", font=("Arial", 10)).pack(pady=5)
@@ -354,4 +355,4 @@ class Login:
         if messagebox.askyesno("Eliminar", "¿Seguro que deseas eliminar este mensaje?"):
             database.eliminar_mensaje(id_mensaje)
             ventana_actual.destroy()
-            self.abrir_mensajes()  # recargar lista
+            self.abrir_mensajes()

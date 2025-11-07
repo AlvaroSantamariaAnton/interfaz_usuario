@@ -3,12 +3,13 @@ from tkinter import *
 from tkinter import messagebox
 from app import database
 from datetime import datetime
+from app.utils import centrar_ventana
 
 class Registro:
     def __init__(self, root, login_callback, modo_admin=False):
         self.root = root
         self.root.title("Registro de usuario")
-        self.root.geometry("500x350")
+        centrar_ventana(self.root, 500, 350)
         self.login_callback = login_callback
         self.modo_admin = modo_admin
 
