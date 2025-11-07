@@ -2,11 +2,14 @@ import sqlite3
 import hashlib
 import os
 
+# Definir la ruta de la base de datos
 DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "usuarios.db")
 
+# Conexión a la base de datos
 def conectar():
     return sqlite3.connect(DB_NAME)
 
+# Crear tabla de usuarios si no existe
 def crear_tabla():
     conn = conectar()
     cursor = conn.cursor()
@@ -32,9 +35,11 @@ def crear_tabla():
     conn.commit()
     conn.close()
 
+# Función para hashear contraseñas
 def hash_password(password):
     return hashlib.md5(password.encode()).hexdigest()
 
+# Registra un nuevo usuario
 def registrar_usuario(username, password, edad, bloqueado=0):
     conn = conectar()
     cursor = conn.cursor()
@@ -50,6 +55,7 @@ def registrar_usuario(username, password, edad, bloqueado=0):
     finally:
         conn.close()
 
+# Verifica si un usuario existe y si la contraseña coincide
 def verificar_usuario(username, password):
     conn = conectar()
     cursor = conn.cursor()
@@ -61,6 +67,7 @@ def verificar_usuario(username, password):
     conn.close()
     return result
 
+# Obtiene los datos de un usuario concreto
 def obtener_datos_usuario(username):
     conn = conectar()
     cursor = conn.cursor()
@@ -73,6 +80,7 @@ def obtener_datos_usuario(username):
     conn.close()
     return datos
 
+# Guarda información adicional del usuario (perfil)
 def actualizar_datos_usuario(username, nombre, apellidos, sexo, nueva_contra=None):
     conn = conectar()
     cursor = conn.cursor()
@@ -92,6 +100,7 @@ def actualizar_datos_usuario(username, nombre, apellidos, sexo, nueva_contra=Non
     conn.commit()
     conn.close()
 
+# Consulta todos los usuarios (usado por admin)
 def obtener_todos_los_usuarios():
     conn = conectar()
     cursor = conn.cursor()
@@ -103,6 +112,7 @@ def obtener_todos_los_usuarios():
     conn.close()
     return usuarios
 
+# Cambia el estado de bloqueo de un usuario
 def actualizar_estado_bloqueo(username, estado):
     conn = conectar()
     cursor = conn.cursor()
@@ -110,6 +120,7 @@ def actualizar_estado_bloqueo(username, estado):
     conn.commit()
     conn.close()
 
+# Elimina un usuario
 def eliminar_usuario(username):
     conn = conectar()
     cursor = conn.cursor()
@@ -117,6 +128,7 @@ def eliminar_usuario(username):
     conn.commit()
     conn.close()
 
+# Crea la tabla de mensajes si no existe
 def crear_tabla_mensajes():
     conn = conectar()
     cursor = conn.cursor()
@@ -132,6 +144,7 @@ def crear_tabla_mensajes():
     conn.commit()
     conn.close()
 
+# Guarda un mensaje en la tabla de mensajes
 def enviar_mensaje(emisor, receptor, mensaje):
     conn = conectar()
     cursor = conn.cursor()
@@ -142,6 +155,7 @@ def enviar_mensaje(emisor, receptor, mensaje):
     conn.commit()
     conn.close()
 
+# Devuelve los mensajes recibidos por un usuario
 def obtener_mensajes_receptor(usuario):
     conn = conectar()
     cursor = conn.cursor()
@@ -155,6 +169,7 @@ def obtener_mensajes_receptor(usuario):
     conn.close()
     return mensajes
 
+# Lista todos los usuarios a los que se puede enviar un mensaje (excepto el actual)
 def obtener_usuarios_destinatarios(excluir=None):
     conn = conectar()
     cursor = conn.cursor()
@@ -166,6 +181,7 @@ def obtener_usuarios_destinatarios(excluir=None):
     conn.close()
     return usuarios
 
+# Elimina un mensaje por ID
 def eliminar_mensaje(id_mensaje):
     conn = conectar()
     cursor = conn.cursor()
