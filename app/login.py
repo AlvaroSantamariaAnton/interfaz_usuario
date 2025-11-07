@@ -13,6 +13,7 @@ class Login:
         self.window.resizable(0, 0)
 
         database.crear_tabla()
+        database.crear_tabla_mensajes()
 
         frame_enc = Frame(window_login)
         frame_enc.pack()
@@ -79,7 +80,7 @@ class Login:
         self.window.destroy()
         self.panel_window = Tk()
         self.panel_window.title("Panel de Usuario")
-        self.panel_window.geometry("500x400")
+        self.panel_window.geometry("400x350")
 
         frame = Frame(self.panel_window)
         frame.pack(pady=40)
@@ -87,7 +88,7 @@ class Login:
         Label(frame, text="Bienvenido a tu panel privado", font=("Arial", 18)).pack(pady=10)
 
         Button(frame, text="Mi perfil", font=("Arial", 12), width=20, command=self.ver_perfil).pack(pady=5)
-        Button(frame, text="Mensajes", font=("Arial", 12), width=20, command=lambda: messagebox.showinfo("Mensajes", "No tienes mensajes nuevos.")).pack(pady=5)
+        Button(frame, text="Mensajes", font=("Arial", 12), width=20, command=self.abrir_mensajes).pack(pady=5)
         Button(frame, text="Ajustes", font=("Arial", 12), width=20, command=self.abrir_ajustes).pack(pady=5)
         Button(frame, text="Cerrar sesión", font=("Arial", 12), width=20, fg="red", command=self.panel_window.destroy).pack(pady=20)
 
@@ -96,7 +97,7 @@ class Login:
     def abrir_panel_admin(self):
             self.admin_window = Tk()
             self.admin_window.title("Panel Administrador")
-            self.admin_window.geometry("400x250")
+            self.admin_window.geometry("400x300")
 
             Label(self.admin_window, text="Panel de Administración", font=("Arial", 16)).pack(pady=20)
 
@@ -119,7 +120,7 @@ class Login:
 
             gestion_win = Toplevel(self.admin_window)
             gestion_win.title("Gestionar Usuarios")
-            gestion_win.geometry("400x400")
+            gestion_win.geometry("600x600")
 
             Label(gestion_win, text="Usuarios Registrados", font=("Arial", 14)).pack(pady=10)
 
@@ -162,7 +163,7 @@ class Login:
 
         perfil_window = Toplevel(self.panel_window)
         perfil_window.title("Mi perfil")
-        perfil_window.geometry("400x400")
+        perfil_window.geometry("350x300")
 
         frame = Frame(perfil_window)
         frame.pack(pady=20)
@@ -196,7 +197,7 @@ class Login:
 
         ajustes_window = Toplevel(self.panel_window)
         ajustes_window.title("Ajustes del perfil")
-        ajustes_window.geometry("400x400")
+        ajustes_window.geometry("400x350")
 
         frame = Frame(ajustes_window)
         frame.pack(pady=20)
@@ -243,3 +244,114 @@ class Login:
 
         Button(ajustes_window, text="Aplicar cambios", command=aplicar_cambios, bg="green", fg="white").pack(pady=10)
         Button(ajustes_window, text="Cancelar", command=ajustes_window.destroy).pack()
+
+    def abrir_mensajes(self):
+        mensajes_win = Toplevel(self.panel_window)
+        mensajes_win.title("Mis mensajes")
+        mensajes_win.geometry("550x400")
+
+        mensajes = database.obtener_mensajes_receptor(self.usuario_logado)
+
+        Label(mensajes_win, text="Mensajes recibidos", font=("Arial", 14)).pack(pady=10)
+
+        frame = Frame(mensajes_win)
+        frame.pack(fill=BOTH, expand=True)
+
+        if not mensajes:
+            Label(frame, text="No tienes mensajes.", font=("Arial", 12), fg="gray").pack(pady=20)
+        else:
+            for id_msg, emisor, texto, fecha in mensajes:
+                vista_previa = (texto[:60] + "...") if len(texto) > 60 else texto
+
+                fila = Frame(frame)
+                fila.pack(fill=X, pady=4, padx=10)
+
+                msg_btn = Button(
+                    fila,
+                    text=f"De: {emisor} | {fecha}\n{vista_previa}",
+                    anchor="w",
+                    justify=LEFT,
+                    wraplength=400,
+                    command=lambda m=(id_msg, emisor, texto, fecha): self.ver_mensaje_detalle(m)
+                )
+                msg_btn.pack(side=LEFT, fill=X, expand=True)
+
+                eliminar_btn = Button(
+                    fila,
+                    text="🗑",
+                    fg="red",
+                    command=lambda idm=id_msg: self.eliminar_mensaje_confirmado(idm, mensajes_win)
+                )
+                eliminar_btn.pack(side=RIGHT, padx=5)
+        
+        Button(mensajes_win, text="Enviar mensaje", command=self.enviar_mensaje_popup).pack(pady=10)
+
+    def enviar_mensaje_popup(self):
+        popup = Toplevel(self.panel_window)
+        popup.title("Enviar mensaje")
+        popup.geometry("400x300")
+
+        Label(popup, text="Enviar mensaje", font=("Arial", 14)).pack(pady=10)
+
+        frame = Frame(popup)
+        frame.pack(pady=10)
+
+        Label(frame, text="Para:", font=("Arial", 12)).grid(row=0, column=0, padx=5, pady=5, sticky=E)
+
+        usuarios = database.obtener_usuarios_destinatarios(excluir=self.usuario_logado)
+        if not usuarios:
+            messagebox.showerror("Error", "No hay usuarios disponibles para enviar mensajes.")
+            popup.destroy()
+            return
+
+        destinatario_var = StringVar()
+        destinatario_var.set(usuarios[0])  # por defecto
+
+        dropdown = OptionMenu(frame, destinatario_var, *usuarios)
+        dropdown.config(font=("Arial", 12))
+        dropdown.grid(row=0, column=1, padx=5, pady=5)
+
+        Label(frame, text="Mensaje:", font=("Arial", 12)).grid(row=1, column=0, padx=5, pady=5, sticky=NE)
+        text_mensaje = Text(frame, font=("Arial", 12), height=6, width=30)
+        text_mensaje.grid(row=1, column=1, padx=5, pady=5)
+
+        def enviar():
+            destinatario = destinatario_var.get()
+            contenido = text_mensaje.get("1.0", END).strip()
+            if not contenido:
+                messagebox.showwarning("Campos vacíos", "Debes escribir un mensaje.")
+                return
+            if destinatario == self.usuario_logado:
+                messagebox.showwarning("Error", "No puedes enviarte mensajes a ti mismo.")
+                return
+            database.enviar_mensaje(self.usuario_logado, destinatario, contenido)
+            messagebox.showinfo("Enviado", "Mensaje enviado correctamente.")
+            popup.destroy()
+
+        Button(popup, text="Enviar", command=enviar, bg="blue", fg="white").pack(pady=10)
+
+    def ver_mensaje_detalle(self, mensaje_info):
+        id_mensaje, emisor, contenido, fecha = mensaje_info
+
+        detalle = Toplevel(self.panel_window)
+        detalle.title("Detalle del mensaje")
+        detalle.geometry("400x300")
+
+        Label(detalle, text=f"De: {emisor}", font=("Arial", 12)).pack(pady=5)
+        Label(detalle, text=f"Fecha: {fecha}", font=("Arial", 10)).pack(pady=5)
+
+        frame = Frame(detalle)
+        frame.pack(pady=10, expand=True, fill=BOTH)
+
+        text_box = Text(frame, wrap=WORD, font=("Arial", 11))
+        text_box.insert(END, contenido)
+        text_box.config(state=DISABLED)
+        text_box.pack(expand=True, fill=BOTH, padx=10, pady=5)
+
+        Button(detalle, text="Volver", command=detalle.destroy).pack(pady=10)
+
+    def eliminar_mensaje_confirmado(self, id_mensaje, ventana_actual):
+        if messagebox.askyesno("Eliminar", "¿Seguro que deseas eliminar este mensaje?"):
+            database.eliminar_mensaje(id_mensaje)
+            ventana_actual.destroy()
+            self.abrir_mensajes()  # recargar lista

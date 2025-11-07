@@ -116,3 +116,59 @@ def eliminar_usuario(username):
     cursor.execute("DELETE FROM usuarios WHERE username = ?", (username,))
     conn.commit()
     conn.close()
+
+def crear_tabla_mensajes():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS mensajes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            emisor TEXT NOT NULL,
+            receptor TEXT NOT NULL,
+            mensaje TEXT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def enviar_mensaje(emisor, receptor, mensaje):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO mensajes (emisor, receptor, mensaje)
+        VALUES (?, ?, ?)
+    """, (emisor, receptor, mensaje))
+    conn.commit()
+    conn.close()
+
+def obtener_mensajes_receptor(usuario):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, emisor, mensaje, fecha
+        FROM mensajes
+        WHERE receptor = ?
+        ORDER BY fecha DESC
+    """, (usuario,))
+    mensajes = cursor.fetchall()
+    conn.close()
+    return mensajes
+
+def obtener_usuarios_destinatarios(excluir=None):
+    conn = conectar()
+    cursor = conn.cursor()
+    if excluir:
+        cursor.execute("SELECT username FROM usuarios WHERE username != 'admin' AND username != ?", (excluir,))
+    else:
+        cursor.execute("SELECT username FROM usuarios WHERE username != 'admin'")
+    usuarios = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return usuarios
+
+def eliminar_mensaje(id_mensaje):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM mensajes WHERE id = ?", (id_mensaje,))
+    conn.commit()
+    conn.close()
