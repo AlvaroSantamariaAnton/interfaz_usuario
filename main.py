@@ -2,16 +2,19 @@ from tkinter import Tk
 from app.login import Login
 from app.utils import centrar_ventana
 
-# Punto de entrada del programa
+
+# ----------------------------------------------
+# Punto de entrada principal del programa
+# ----------------------------------------------
 if __name__ == "__main__":
-    # Crear una instancia de la ventana principal de Tkinter
+    # Se crea la ventana principal de la aplicación con Tkinter
     root = Tk()
 
-    # Centrar la ventana en la pantalla
+    # Se centra la ventana en pantalla con dimensiones específicas
     centrar_ventana(root, 420, 400)
     
-    # Inicializar la interfaz de login, pasándole la ventana principal
+    # Se instancia la clase Login, pasando la ventana como argumento
     app = Login(root)
     
-    # Iniciar el bucle principal de la aplicación (mantiene la ventana abierta)
+    # Se inicia el bucle principal de Tkinter (para mantener la ventana abierta)
     root.mainloop()

@@ -3,14 +3,10 @@
 def centrar_ventana(ventana, ancho, alto):
     """
     Centra una ventana de Tkinter en la pantalla.
-
-    Parámetros:
-        ventana: la instancia de Tk() o Toplevel()
-        ancho (int): ancho deseado de la ventana
-        alto (int): alto deseado de la ventana
     """
 
-    ventana.update_idletasks()
+    ventana.update_idletasks()  # Asegura que los datos de geometría están actualizados
+
     # Obtenemos las dimensiones de la pantalla del usuario
     screen_width = ventana.winfo_screenwidth()
     screen_height = ventana.winfo_screenheight()

@@ -2,17 +2,29 @@ import sqlite3
 import hashlib
 import os
 
-# Definir la ruta de la base de datos
+# Ruta absoluta del archivo de base de datos (../data/usuarios.db)
 DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "usuarios.db")
 
-# Conexión a la base de datos
+
+# ----------------------------------------
+# Conexión y tablas
+# ----------------------------------------
+
 def conectar():
+    """
+    Establece y retorna la conexión con la base de datos.
+    """
     return sqlite3.connect(DB_NAME)
 
-# Crear tabla de usuarios si no existe
+
 def crear_tabla():
+    """
+    Crea la tabla de usuarios si no existe.
+    Inserta también al usuario admin por defecto si no está en la base de datos.
+    """
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +37,7 @@ def crear_tabla():
             sexo TEXT
         )
     """)
+
     # Crear usuario admin si no existe
     cursor.execute("SELECT * FROM usuarios WHERE username = 'admin'")
     if not cursor.fetchone():
@@ -32,15 +45,46 @@ def crear_tabla():
             INSERT INTO usuarios (username, password, edad, bloqueado, nombre)
             VALUES (?, ?, ?, ?, ?)
         """, ("admin", hash_password("admin2025"), 99, 0, "Administrador"))
+
     conn.commit()
     conn.close()
 
-# Función para hashear contraseñas
+
+def crear_tabla_mensajes():
+    """
+    Crea la tabla de mensajes si no existe.
+    """
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS mensajes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            emisor TEXT NOT NULL,
+            receptor TEXT NOT NULL,
+            mensaje TEXT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+# ----------------------------------------
+# Funciones de autenticación y registro
+# ----------------------------------------
+
 def hash_password(password):
+    """
+    Hashea una contraseña usando MD5.
+    """
     return hashlib.md5(password.encode()).hexdigest()
 
-# Registra un nuevo usuario
+
 def registrar_usuario(username, password, edad, bloqueado=0):
+    """
+    Registra un nuevo usuario en la base de datos.
+    Retorna True si el registro fue exitoso, False si el usuario ya existe.
+    """
     conn = conectar()
     cursor = conn.cursor()
     try:
@@ -55,8 +99,12 @@ def registrar_usuario(username, password, edad, bloqueado=0):
     finally:
         conn.close()
 
-# Verifica si un usuario existe y si la contraseña coincide
+
 def verificar_usuario(username, password):
+    """
+    Verifica si existe un usuario con esa combinación usuario/contraseña.
+    Devuelve los datos si es válido, None si no lo es.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -67,8 +115,15 @@ def verificar_usuario(username, password):
     conn.close()
     return result
 
-# Obtiene los datos de un usuario concreto
+
+# ----------------------------------------
+# Funciones de perfil
+# ----------------------------------------
+
 def obtener_datos_usuario(username):
+    """
+    Devuelve todos los datos personales de un usuario específico.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -80,8 +135,12 @@ def obtener_datos_usuario(username):
     conn.close()
     return datos
 
-# Guarda información adicional del usuario (perfil)
+
 def actualizar_datos_usuario(username, nombre, apellidos, sexo, nueva_contra=None):
+    """
+    Actualiza los datos del perfil de un usuario.
+    Si se indica nueva contraseña, también se actualiza.
+    """
     conn = conectar()
     cursor = conn.cursor()
     if nueva_contra:
@@ -100,8 +159,15 @@ def actualizar_datos_usuario(username, nombre, apellidos, sexo, nueva_contra=Non
     conn.commit()
     conn.close()
 
-# Consulta todos los usuarios (usado por admin)
+
+# ----------------------------------------
+# Funciones de administración
+# ----------------------------------------
+
 def obtener_todos_los_usuarios():
+    """
+    Devuelve una lista con todos los usuarios, excepto el admin.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -112,40 +178,37 @@ def obtener_todos_los_usuarios():
     conn.close()
     return usuarios
 
-# Cambia el estado de bloqueo de un usuario
+
 def actualizar_estado_bloqueo(username, estado):
+    """
+    Cambia el estado de bloqueo de un usuario (0 o 1).
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("UPDATE usuarios SET bloqueado = ? WHERE username = ?", (estado, username))
     conn.commit()
     conn.close()
 
-# Elimina un usuario
+
 def eliminar_usuario(username):
+    """
+    Elimina completamente un usuario de la base de datos.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM usuarios WHERE username = ?", (username,))
     conn.commit()
     conn.close()
 
-# Crea la tabla de mensajes si no existe
-def crear_tabla_mensajes():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS mensajes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            emisor TEXT NOT NULL,
-            receptor TEXT NOT NULL,
-            mensaje TEXT NOT NULL,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    conn.close()
 
-# Guarda un mensaje en la tabla de mensajes
+# ----------------------------------------
+# Funciones de mensajes
+# ----------------------------------------
+
 def enviar_mensaje(emisor, receptor, mensaje):
+    """
+    Guarda un nuevo mensaje entre usuarios.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -155,8 +218,11 @@ def enviar_mensaje(emisor, receptor, mensaje):
     conn.commit()
     conn.close()
 
-# Devuelve los mensajes recibidos por un usuario
+
 def obtener_mensajes_receptor(usuario):
+    """
+    Devuelve los mensajes recibidos por un usuario, ordenados por fecha.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -169,8 +235,12 @@ def obtener_mensajes_receptor(usuario):
     conn.close()
     return mensajes
 
-# Lista todos los usuarios a los que se puede enviar un mensaje (excepto el actual)
+
 def obtener_usuarios_destinatarios(excluir=None):
+    """
+    Devuelve una lista de usuarios a los que se les puede enviar mensajes.
+    Se excluye a 'admin' y al propio usuario (si se indica).
+    """
     conn = conectar()
     cursor = conn.cursor()
     if excluir:
@@ -181,8 +251,11 @@ def obtener_usuarios_destinatarios(excluir=None):
     conn.close()
     return usuarios
 
-# Elimina un mensaje por ID
+
 def eliminar_mensaje(id_mensaje):
+    """
+    Elimina un mensaje por su ID.
+    """
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM mensajes WHERE id = ?", (id_mensaje,))
