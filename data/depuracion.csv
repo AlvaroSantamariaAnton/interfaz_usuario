@@ -1,7 +1,7 @@
-usuario,contraseña
+usuario,contraseña,bloqueado
 admin,admin2025
 alvarouser,alvaropsswd
 mariauser,mariapsswd
-luciauser,luciapsswd
+luciauser,luciapsswd,bloqueado
 pablouser,pablopsswd
-jorgeuser,jorgepsswd
+jorgeuser,jorgepsswd,bloqueado

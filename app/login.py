@@ -120,12 +120,26 @@ class Login:
         frame = Frame(self.panel_window)
         frame.pack(pady=40)
 
-        Label(frame, text="Bienvenido a tu panel privado", font=("Arial", 18)).pack(pady=10)
+        # Cargar imagen de bienvenida
+        try:
+            img_user = Image.open("img/user.png")
+            img_user = img_user.resize((30, 30))
+            self.img_user_render = ImageTk.PhotoImage(img_user)
+            label_img = Label(frame, image=self.img_user_render)
+            label_img.pack(side=LEFT, padx=(0, 10))
+        except Exception as e:
+            print(f"Error cargando imagen de usuario: {e}")
 
-        Button(frame, text="Mi perfil", font=("Arial", 12), width=20, command=self.ver_perfil).pack(pady=5)
-        Button(frame, text="Mensajes", font=("Arial", 12), width=20, command=self.abrir_mensajes).pack(pady=5)
-        Button(frame, text="Ajustes", font=("Arial", 12), width=20, command=self.abrir_ajustes).pack(pady=5)
-        Button(frame, text="Cerrar sesión", font=("Arial", 12), width=20, fg="red", command=self.panel_window.destroy).pack(pady=20)
+        label_bienvenida = Label(frame, text="Bienvenido a tu panel privado", font=("Arial", 18))
+        label_bienvenida.pack(side=LEFT)
+
+        botones_frame = Frame(self.panel_window)
+        botones_frame.pack(pady=20)
+
+        Button(botones_frame, text="Mi perfil", font=("Arial", 12), width=20, command=self.ver_perfil).pack(pady=5)
+        Button(botones_frame, text="Mensajes", font=("Arial", 12), width=20, command=self.abrir_mensajes).pack(pady=5)
+        Button(botones_frame, text="Ajustes", font=("Arial", 12), width=20, command=self.abrir_ajustes).pack(pady=5)
+        Button(botones_frame, text="Cerrar sesión", font=("Arial", 12), width=20, fg="red", command=self.panel_window.destroy).pack(pady=20)
 
         self.panel_window.mainloop()
 
@@ -362,7 +376,7 @@ class Login:
         """
         popup = Toplevel(self.panel_window)
         popup.title("Enviar mensaje")
-        centrar_ventana(popup, 400, 300)
+        centrar_ventana(popup, 600, 400)
 
         Label(popup, text="Enviar mensaje", font=("Arial", 14)).pack(pady=10)
 
@@ -386,7 +400,7 @@ class Login:
 
         # Área de texto del mensaje
         Label(frame, text="Mensaje:", font=("Arial", 12)).grid(row=1, column=0, padx=5, pady=5, sticky=NE)
-        text_mensaje = Text(frame, font=("Arial", 12), height=6, width=30)
+        text_mensaje = Text(frame, font=("Arial", 12), height=10, width=50)
         text_mensaje.grid(row=1, column=1, padx=5, pady=5)
 
         def enviar():

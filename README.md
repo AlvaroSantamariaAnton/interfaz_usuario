@@ -19,10 +19,11 @@ interfaz_usuario/
 │
 ├── data/
 │   ├── usuarios.db       # Base de datos SQLite ya inicializada con datos de ejemplo
-│   ├── depuracion.csv    # CSV con datos útiles para depurar o modificar la base existente
+│   ├── depuracion.csv    # CSV con datos útiles para depurar
 │
 ├── img/
 │   ├── login.png         # Icono del inicio de sesión
+│   ├── user.png          # Icono del panel privado
 │
 └── main.py               # Archivo principal que inicia la aplicación
 ```
@@ -77,6 +78,5 @@ pip install pillow
   - Enviar mensajes a otros usuarios (menos a sí mismos).
   - Leer y eliminar sus mensajes recibidos.
 - Las contraseñas se almacenan encriptadas usando **MD5**.
-- Todos los campos marcados con `*` son **obligatorios**.
 
 ---
